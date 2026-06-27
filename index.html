@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>📰 Portal de Noticias</title>
+<link rel="stylesheet" href="estilo.css">
+</head>
+
+<body>
+
+<header>
+    <h1>🗞️ Portal de Noticias</h1>
+</header>
+
+<div class="container">
+
+    <div class="controls">
+        <input id="buscar" class="searchbox" placeholder="Buscar...">
+        <button class="btn" onclick="toggleTheme()">Modo</button>
+    </div>
+
+    <div id="resultadoInfo" class="info"></div>
+
+</div>
+
+    <!-- 🔥 CONTADOR EN VIVO -->
+    <div id="contador">Noticias cargadas: 0</div>
+
+    <div id="clima"></div>
+
+    <div class="grid" id="noticias"></div>
+
+</div>
+
+<footer>© Portal de Noticias</footer>
+
+<!-- 🔊 BOTÓN LECTURA -->
+<button id="leer">🔊 Leer titulares</button>
+
+<script src="script.js"></script>
+
+</body>
+</html>
