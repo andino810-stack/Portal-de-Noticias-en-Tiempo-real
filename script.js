@@ -3,7 +3,18 @@ let noticias = [];
 const rss = [
 ["Alem News","https://www.alem.news/feed/"],
 ["Clarín","https://www.clarin.com/rss/lo-ultimo/"],
-["BBC Mundo","https://feeds.bbci.co.uk/mundo/rss.xml"]
+["Infobae","https://www.infobae.com/feeds/rss/"],
+["BBC Mundo","https://feeds.bbci.co.uk/mundo/rss.xml"],
+["Misiones Online - General","https://misionesonline.net/feed/"],
+["Misiones Online - Política","https://misionesonline.net/politica/feed/"],
+["Misiones Online - Policiales","https://misionesonline.net/policiales/feed/"],
+["Noticias de la Calle - Locales","https://www.noticiasdelacalle.com.ar/rss/locales/"],
+["Noticias de la Calle - Nacionales","https://www.noticiasdelacalle.com.ar/rss/nacionales/"],
+["Xataka","https://www.xataka.com/rss"],
+["Genbeta","https://www.genbeta.com/rss"],
+["Página/12","https://www.pagina12.com.ar/rss/ultimas-noticias"],
+["TN","https://tn.com.ar/rss"],
+["Crónica","https://www.cronica.com.ar/rss/"]
 ];
 
 // 🔥 CONTADOR EN VIVO
