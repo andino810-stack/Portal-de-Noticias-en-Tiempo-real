@@ -1,7 +1,5 @@
 let noticias = [];
 
-const rss = [
-["Alem News","https://www.alem.news/feed/"],
 ["Clarín","https://www.clarin.com/rss/lo-ultimo/"],
 ["Infobae","https://www.infobae.com/feeds/rss/"],
 ["BBC Mundo","https://feeds.bbci.co.uk/mundo/rss.xml"],
