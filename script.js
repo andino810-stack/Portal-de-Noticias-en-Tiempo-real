@@ -1,5 +1,7 @@
 let noticias = [];
 
+const rss = [
+["Alem News","https://www.alem.news/feed/"],
 ["Clarín","https://www.clarin.com/rss/lo-ultimo/"],
 ["Infobae","https://www.infobae.com/feeds/rss/"],
 ["BBC Mundo","https://feeds.bbci.co.uk/mundo/rss.xml"],
@@ -15,134 +17,184 @@ let noticias = [];
 ["Crónica","https://www.cronica.com.ar/rss/"]
 ];
 
-// 🔥 CONTADOR EN VIVO
-function actualizarContador() {
-    let el = document.getElementById("contador");
-    if (el) {
-        el.innerText = "Noticias cargadas: " + noticias.length;
+// Contador
+function actualizarContador(){
+    let el=document.getElementById("contador");
+    if(el){
+        el.innerText="Noticias cargadas: "+noticias.length;
     }
 }
 
-async function cargar() {
-    let cont = document.getElementById("noticias");
+async function cargar(){
 
-    for (let r of rss) {
-        try {
-            let res = await fetch(
-                "https://api.rss2json.com/v1/api.json?rss_url=" +
+    let cont=document.getElementById("noticias");
+    cont.innerHTML="";
+
+    let vistas=JSON.parse(localStorage.getItem("vistas")||"[]");
+
+    for(let r of rss){
+
+        try{
+
+            let res=await fetch(
+                "https://api.rss2json.com/v1/api.json?rss_url="+
                 encodeURIComponent(r[1])
             );
 
-            let data = await res.json();
+            let data=await res.json();
 
-            data.items.slice(0, 8).forEach(n => {
+            if(!data.items) continue;
+
+            data.items.slice(0,8).forEach(n=>{
+
+                if(vistas.includes(n.link)){
+                    return;
+                }
+
+                vistas.push(n.link);
+
+                if(vistas.length>500){
+                    vistas.shift();
+                }
+
                 noticias.push(n);
 
-                cont.innerHTML += `
+                cont.innerHTML+=`
                 <article class="card">
-                    ${n.thumbnail ? `<img src="${n.thumbnail}">` : ""}
-                    <h3><a href="${n.link}" target="_blank">${n.title}</a></h3>
-                    <p>${n.description.replace(/<[^>]*>/g,"").slice(0,220)}</p>
-                    <a class="btn" href="${n.link}" target="_blank">Leer original</a>
+                ${n.thumbnail?`<img src="${n.thumbnail}" loading="lazy">`:""}
+                <h3><a href="${n.link}" target="_blank">${n.title}</a></h3>
+                <p>${n.description.replace(/<[^>]*>/g,"").slice(0,220)}...</p>
+                <a class="btn" href="${n.link}" target="_blank">Leer original</a>
                 </article>
                 `;
 
-                // 🔥 ACTUALIZA EN VIVO
                 actualizarContador();
+
             });
 
-        } catch (e) {
-            console.log("Error RSS:", r[0]);
+        }catch(e){
+            console.log("Error RSS:",r[0]);
         }
+
     }
-}
 
-// 🌙 TEMA OSCURO
+    localStorage.setItem("vistas",JSON.stringify(vistas));
+    
+
+    // 🌙 MODO OSCURO
 function toggleTheme(){
-    let d = document.documentElement;
-    let t = d.getAttribute("data-theme") == "dark" ? "light" : "dark";
-    d.setAttribute("data-theme", t);
-    localStorage.setItem("theme", t);
+
+    let d=document.documentElement;
+
+    let tema=d.getAttribute("data-theme")==="dark"
+        ?"light"
+        :"dark";
+
+    d.setAttribute("data-theme",tema);
+
+    localStorage.setItem("theme",tema);
+
 }
 
-if (localStorage.theme) {
-    document.documentElement.setAttribute("data-theme", localStorage.theme);
+if(localStorage.getItem("theme")){
+    document.documentElement.setAttribute(
+        "data-theme",
+        localStorage.getItem("theme")
+    );
 }
 
 // 🔊 LECTURA MANUAL
-document.getElementById("leer").onclick = () => {
+document.getElementById("leer").onclick=()=>{
+
     speechSynthesis.cancel();
 
-    let textos = [...document.querySelectorAll(".card h3")]
-        .map(x => x.innerText);
+    let textos=[...document.querySelectorAll(".card h3")]
+        .map(x=>x.innerText);
 
-    let i = 0;
+    let i=0;
 
     function leer(){
-        if (i >= textos.length) return;
 
-        let u = new SpeechSynthesisUtterance(textos[i]);
-        u.lang = "es-AR";
+        if(i>=textos.length) return;
 
-        u.onend = () => {
+        let voz=new SpeechSynthesisUtterance(textos[i]);
+
+        voz.lang="es-AR";
+        voz.rate=1;
+
+        voz.onend=()=>{
             i++;
             leer();
         };
 
-        speechSynthesis.speak(u);
+        speechSynthesis.speak(voz);
+
     }
 
     leer();
+
 };
 
 // 🔊 LECTURA AUTOMÁTICA
-function leerAutomatico() {
-    let textos = [...document.querySelectorAll(".card h3")]
-        .map(x => x.innerText);
+function leerAutomatico(){
 
-    let i = 0;
+    speechSynthesis.cancel();
+
+    let textos=[...document.querySelectorAll(".card h3")]
+        .map(x=>x.innerText);
+
+    if(textos.length===0) return;
+
+    let i=0;
 
     function siguiente(){
-        if (i >= textos.length) return;
 
-        let voz = new SpeechSynthesisUtterance(textos[i]);
-        voz.lang = "es-AR";
-        voz.rate = 1;
+        if(i>=textos.length){
+            return;
+        }
 
-        voz.onend = () => {
+        let voz=new SpeechSynthesisUtterance(textos[i]);
+
+        voz.lang="es-AR";
+        voz.rate=1;
+
+        voz.onend=()=>{
             i++;
             siguiente();
         };
 
-        speechSynthesis.cancel();
         speechSynthesis.speak(voz);
+
     }
 
     siguiente();
-}
 
-// 🚀 INICIO
-cargar().then(() => {
-    console.log("Noticias cargadas:", noticias.length);
-
-    setTimeout(() => {
-        leerAutomatico();
-    }, 3000);
-});
-
+    // 🔍 BUSCADOR
 document.getElementById("buscar").addEventListener("input", function () {
+
     let filtro = this.value.toLowerCase().trim();
-    let cards = Array.from(document.querySelectorAll(".card"));
+
+    let cards = [...document.querySelectorAll(".card")];
+
     let resultadoInfo = document.getElementById("resultadoInfo");
+
+    let cont = document.getElementById("noticias");
 
     let resultados = [];
 
     cards.forEach(card => {
+
         let tituloEl = card.querySelector("h3 a");
         let descEl = card.querySelector("p");
 
-        let titulo = tituloEl.innerText.toLowerCase();
-        let desc = descEl.innerText.toLowerCase();
+        let tituloOriginal = tituloEl.dataset.original || tituloEl.innerText;
+        let descOriginal = descEl.dataset.original || descEl.innerText;
+
+        tituloEl.dataset.original = tituloOriginal;
+        descEl.dataset.original = descOriginal;
+
+        let titulo = tituloOriginal.toLowerCase();
+        let desc = descOriginal.toLowerCase();
 
         let score = 0;
 
@@ -153,46 +205,77 @@ document.getElementById("buscar").addEventListener("input", function () {
 
         if (score > 0) {
             card.style.display = "block";
-            resultados.push({ card, score });
+            resultados.push({card, score});
         } else {
             card.style.display = "none";
         }
 
-        // 🟡 RESALTAR TEXTO EN TÍTULO
         if (filtro !== "") {
+
             let regex = new RegExp(filtro, "gi");
 
-            tituloEl.innerHTML = tituloEl.innerText.replace(
+            tituloEl.innerHTML = tituloOriginal.replace(
                 regex,
-                match => `<mark>${match}</mark>`
+                m => `<mark>${m}</mark>`
             );
 
-            descEl.innerHTML = descEl.innerText.replace(
+            descEl.innerHTML = descOriginal.replace(
                 regex,
-                match => `<mark>${match}</mark>`
+                m => `<mark>${m}</mark>`
             );
+
         } else {
-            tituloEl.innerHTML = tituloEl.innerText;
-            descEl.innerHTML = descEl.innerText;
+
+            tituloEl.innerHTML = tituloOriginal;
+            descEl.innerHTML = descOriginal;
+
         }
+
     });
 
-    // 📈 ORDENAR POR RELEVANCIA
-    resultados.sort((a, b) => b.score - a.score);
+    resultados.sort((a,b)=>b.score-a.score);
 
-    let cont = document.getElementById("noticias");
-
-    resultados.forEach(r => {
-        cont.appendChild(r.card);
-    });
-
-    // 📊 INFO DE RESULTADOS
-    let visibles = resultados.length;
+    resultados.forEach(r=>cont.appendChild(r.card));
 
     resultadoInfo.innerText =
         filtro === ""
         ? ""
-        : visibles > 0
-            ? `🔎 ${visibles} resultados encontrados`
-            : "❌ 0 resultados";
+        : resultados.length
+            ? `🔎 ${resultados.length} resultados encontrados`
+            : "❌ No se encontraron noticias";
+
 });
+
+// 🚀 INICIO
+cargar().then(() => {
+
+    console.log("Noticias nuevas:", noticias.length);
+
+    actualizarContador();
+
+    setTimeout(() => {
+        leerAutomatico();
+    }, 3000);
+
+});
+
+// 🔄 ACTUALIZAR CADA 5 MINUTOS
+setInterval(() => {
+
+    noticias = [];
+    document.getElementById("noticias").innerHTML = "";
+
+    cargar().then(() => {
+
+        actualizarContador();
+
+        setTimeout(() => {
+            leerAutomatico();
+        }, 3000);
+
+    });
+
+}, 300000);
+
+}
+}
